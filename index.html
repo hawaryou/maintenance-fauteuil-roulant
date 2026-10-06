@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ENR10 — Fiche de maintenance fauteuil roulant</title>
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+
+  <!-- Moteurs de scan repris du système fourni : EAN-13 / Code 128 / QR / Data Matrix -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script type="module">
+    window.__zbarPolyfillReady = import(
+      "https://cdn.jsdelivr.net/npm/@undecaf/barcode-detector-polyfill@0.9.23/dist/main.js"
+    ).then(function(mod) {
+      window.BarcodeDetectorPolyfill = mod.BarcodeDetectorPolyfill;
+      return mod.BarcodeDetectorPolyfill;
+    }).catch(function(error) {
+      console.error("Chargement ZBar/WebAssembly impossible :", error);
+      window.__zbarPolyfillError = error;
+      throw error;
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/zxing-wasm@3.1.4/dist/iife/reader/index.js"></script>
+
+
+<style>
+.scan-row{display:flex;gap:8px;align-items:stretch}.scan-row>input{flex:1;min-width:0}.scan-actions{display:flex;gap:6px;flex-wrap:wrap}.scan-button,.photo-button,.stop-button,.zoom-button{border:0;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer}.scan-button{background:#4f46e5;color:#fff}.barcode-button{background:#374151}.photo-button{width:100%;margin-top:7px;background:#5f6368;color:#fff}.scanner{display:none;margin-top:10px;padding:10px;background:#000;border-radius:12px;overflow:hidden}.reader{position:relative;width:100%;overflow:hidden;border-radius:8px}.barcode-reader{position:relative;background:#000;min-height:220px}.barcode-reader:after{content:"";position:absolute;left:3%;right:3%;top:42%;height:26%;border:3px solid rgba(255,255,255,.9);border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.18);pointer-events:none}.scan-overlay-2d{position:absolute;left:50%;top:50%;width:62%;aspect-ratio:1;transform:translate(-50%,-50%);border:3px solid rgba(255,255,255,.9);border-radius:10px;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;z-index:3}.scan-overlay-2d span{background:rgba(0,0,0,.65);color:#fff;padding:5px 9px;border-radius:6px;font-size:13px;font-weight:700}.scanner-title{color:#fff;text-align:center;font-weight:700;margin-bottom:8px}.scan-hint{color:#ddd;text-align:center;font-size:12px;margin:8px 4px;line-height:1.4}.scanner-tools{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.zoom-button{flex:1;min-width:75px;background:#fff;color:#222}.stop-button{background:#d93025;color:#fff}.hidden-file{display:none}.serial-inline{display:block;margin-top:7px}.serial-inline .scan-row{margin-top:5px}
+@media(max-width:600px){.scan-row{flex-direction:column}.scan-actions{display:grid;grid-template-columns:1fr 1fr}.scan-actions .scan-button{width:100%;min-height:44px}.scanner-tools .zoom-button{min-height:42px}.stop-button{width:100%;min-height:44px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-left">
+    <button type="button" class="menu-button" id="menuButton" aria-label="Ouvrir le menu" aria-expanded="false">☰</button>
+    <nav class="app-menu" id="appMenu" aria-label="Navigation principale">
+      <a href="../maintenance-lit-medical-main/index.html">🛏️ Maintenance lit médicalisé</a>
+      <a href="./index.html">♿ Maintenance fauteuil roulant</a>
+    </nav>
+    <img src="euromed-logo.jpeg" alt="EuroMed">
+  </div>
+  <div class="code">ENR10</div>
+</header>
+
+<main>
+  <div class="title">
+    <h1>FICHE DE MAINTENANCE FAUTEUIL ROULANT</h1>
+    <div class="maintenance">
+      <span>Maintenance :</span>
+      <label>ANNUELLE <input type="radio" name="maintenance" value="ANNUELLE"></label>
+      <label>PÉRIODIQUE <input type="radio" name="maintenance" value="PÉRIODIQUE"></label>
+    </div>
+  </div>
+
+  <section class="batch-panel" id="batchPanel">
+    <div class="batch-head">
+      <div>
+        <h2>CHOIX DU MODE DE MAINTENANCE</h2>
+        <p id="batchHelp">Choisissez le mode adapté à votre intervention : <strong>1 fauteuil à la fois</strong> ou <strong>plusieurs fauteuils avec une seule signature client</strong>.</p>
+      </div>
+      <span id="batchCount" class="batch-count">0 fauteuil</span>
+    </div>
+    <div class="mode-choice" aria-label="Choix du mode de maintenance">
+      <div id="normalModeCard" class="mode-card mode-normal active">
+        <div class="mode-card-icon">1</div>
+        <div class="mode-card-content">
+          <strong>MODE NORMAL — 1 FAUTEUIL À LA FOIS</strong>
+          <span>Un certificat et une signature client pour chaque fauteuil.</span>
+        </div>
+        <button type="button" id="normalMode" class="mode-select">✓ Mode actuel</button>
+      </div>
+      <div id="multiModeCard" class="mode-card mode-multi">
+        <div class="mode-card-icon">+20</div>
+        <div class="mode-card-content">
+          <strong>MODE MULTI-FAUTEUILS</strong>
+          <span>Enchaînez plusieurs fauteuils et faites signer le client une seule fois à la fin.</span>
+        </div>
+        <button type="button" id="batchStart" class="mode-select">▶ Choisir ce mode</button>
+      </div>
+    </div>
+    <div class="batch-actions">
+      <button type="button" id="batchSave" class="batch-secondary" disabled>💾 Enregistrer ce fauteuil et passer au suivant</button>
+      <button type="button" id="batchFinish" class="batch-success" disabled>✍️ Terminer la tournée et signer</button>
+      <button type="button" id="batchCancel" class="batch-danger" disabled>✕ Annuler la tournée</button>
+    </div>
+    <div id="batchStatus" class="batch-status" aria-live="polite">🟢 <strong>MODE NORMAL ACTIF</strong> — 1 fauteuil à la fois, avec signature client pour ce certificat.</div>
+  </section>
+
+  <div class="section-separator" aria-hidden="true"><span>IDENTIFICATION DU FAUTEUIL</span></div>
+
+  <section class="ident">
+    <div>
+      <h2>IDENTIFICATION</h2>
+      <label>Marque / modèle : <input id="marque" value=""></label>
+      <label>Année de fabrication : <input id="annee"></label>
+      <label>N° de série ou de parc :
+        <div class="scan-row"><input id="serie" type="text" placeholder="Code du fauteuil / parc"><div class="scan-actions"><button type="button" class="scan-button" onclick="startScanner('serie','qr')">📷 QR précis</button><button type="button" class="scan-button barcode-button" onclick="startScanner('serie','barcode')">📷 Code-barres</button></div></div>
+        <button type="button" class="photo-button" onclick="choosePhoto('serie')">🖼️ Lire une photo du code</button>
+        <input id="file-serie" class="hidden-file" type="file" accept="image/*" capture="environment" onchange="scanPhoto('serie', this)">
+        <div id="scanner-serie" class="scanner"><div class="scanner-title">Scanner le code</div><div id="reader-serie" class="reader"></div><div class="scan-hint">QR : placez le code au centre. Code-barres : gardez toute la largeur visible.</div><div class="scanner-tools"><button type="button" class="zoom-button" onclick="setCameraZoom(1)">🔎 1×</button><button type="button" class="zoom-button" onclick="setCameraZoom(1.5)">🔎 1,5×</button><button type="button" class="zoom-button" onclick="setCameraZoom(2)">🔎 2×</button><button type="button" class="zoom-button" onclick="setCameraFocus()">🎯 Autofocus</button><button type="button" class="stop-button" onclick="stopScanner('serie')">Fermer la caméra</button></div></div>
+      </label>
+      <label>Accessoires : <input type="radio" name="accessoires" value="Oui"> oui <input type="radio" name="accessoires" value="Non"> non</label>
+    </div>
+    <div>
+      <h2>LOCALISATION</h2>
+      <label>Client / patient(s) :<textarea id="client" rows="2" placeholder="Un nom ou plusieurs noms de clients / patients"></textarea></label>
+      <label>Service / chambre : <input id="localisation"></label>
+      <label>Adresse : <input id="adresse"></label>
+      <label>Ville : <input id="ville"></label>
+      <label>Référence intervention : <input id="reference"></label>
+    </div>
+  </section>
+
+  <div id="controls"></div>
+
+  <section class="obsolescence-panel">
+    <div class="obsolescence-title">OBSOLESCENCE</div>
+    <div class="obsolescence-slider-wrap">
+      <span class="obs-end obs-1">1</span>
+      <input id="obsolescence" type="range" min="1" max="5" step="1" value="1" aria-label="Niveau d'obsolescence de 1 à 5">
+      <span class="obs-end obs-5">5</span>
+      <output id="obsolescenceValue" aria-live="polite">1</output>
+    </div>
+    <div class="obs-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+  </section>
+
+  <section class="notes">
+    <div><h2>OBSERVATIONS :</h2><textarea id="observations"></textarea></div>
+    <div><h2>Pièces changées :</h2><textarea id="pieces"></textarea></div>
+  </section>
+
+
+  <section class="sign">
+    <label>Fait le : <input type="date" id="date"></label>
+    <label>Nom Prénom du technicien : <input id="technicien"></label>
+    <div class="signatures">
+      <div><strong>Signature du technicien</strong><canvas id="sigTech"></canvas><button type="button" class="clear" data-canvas="sigTech">Effacer</button></div>
+      <div id="clientSignatureBlock"><strong>Signature du client</strong><canvas id="sigClient"></canvas><button type="button" class="clear" data-canvas="sigClient">Effacer</button><p id="clientSignatureHint" class="signature-hint"></p></div>
+    </div>
+  </section>
+
+  <div class="actions">
+    <button id="pdf" class="primary">Générer le PDF</button>
+    <button id="send" class="primary">Générer le PDF et envoyer par e-mail</button>
+    <span id="status"></span>
+  </div>
+</main>
+
+<div id="scanSuccessModal" class="scan-success-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="scanSuccessTitle">
+  <div class="scan-success-card">
+    <div class="scan-success-icon">✓</div>
+    <h2 id="scanSuccessTitle">Scan réussi !</h2>
+    <img class="scan-success-photo" src="scan-success-euromed.jpg" alt="Illustration EuroMed de confirmation du scan">
+    <p id="scanSuccessType">Code détecté</p>
+    <div id="scanSuccessValue" class="scan-success-value"></div>
+    <button type="button" class="scan-success-close" onclick="closeScanSuccess()">Continuer</button>
+  </div>
+</div>
+
+<footer>ENR10-V03 · Fiche de maintenance fauteuil roulant manuel · EuroMed</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
