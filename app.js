@@ -69,6 +69,8 @@ function updateBatchUI(){
   const sendButton=document.getElementById('send');
   batchCount.textContent=`${n} fauteuil${n>1?'s':''}`;
   document.body.classList.toggle('batch-active',batchMode);
+  const bsBottom=document.getElementById('batchSaveBottom');if(bsBottom)bsBottom.disabled=!batchMode||batchFinalized;
+  const bfBottom=document.getElementById('batchFinishBottom');if(bfBottom)bfBottom.disabled=!batchMode||batchFinalized;
   normalModeCard?.classList.toggle('active',!batchMode);
   multiModeCard?.classList.toggle('active',batchMode);
   batchStart.disabled=batchMode;
