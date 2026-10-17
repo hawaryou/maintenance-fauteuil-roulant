@@ -235,3 +235,57 @@ input[type=text],input[type=date],input:not([type]),textarea{background:#071725;
 
 /* Compatibilité avec les anciennes fiches dont l’aperçu utilise la classe open */
 .pdf-preview-modal.open{opacity:1;visibility:visible;pointer-events:auto}
+
+
+/* EuroMed HUB — socle commun responsive (téléphone / iPhone) */
+:root{color-scheme:dark;--euromed-navy:#071827;--euromed-panel:#102b40;--euromed-blue:#168bd2;--euromed-cyan:#29d5e8;--euromed-purple:#8b5cf6;--euromed-green:#19b981;--euromed-orange:#f59e0b}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:12px;scroll-padding-bottom:calc(180px + env(safe-area-inset-bottom,0px))}
+body{background:#071827;color:#edf7ff}
+.top,main{border-color:#24516b}
+h1,h2,h3{color:#eaf8ff}
+section,.batch-panel,.ident,.client,.observations,.actions{border-radius:14px}
+input,select,textarea{font-size:16px!important;min-height:44px;max-width:100%;border-radius:9px}
+button{min-height:46px;border-radius:11px;font-weight:700;touch-action:manipulation}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #29d5e8;outline-offset:2px}
+.batch-panel{background:linear-gradient(135deg,#102b40 0%,#172c4e 55%,#20264e 100%);border:1px solid #315c79;box-shadow:0 10px 28px #0003}
+.batch-head{color:#f4fbff}
+.mode-card{border-radius:13px;border:1px solid #315b74}
+.mode-normal{background:linear-gradient(135deg,#123b58,#15506a)}
+.mode-multi{background:linear-gradient(135deg,#32265f,#263b70)}
+.mode-card.active{outline:2px solid #29d5e8;box-shadow:0 0 0 4px #29d5e822}
+.batch-status{border-radius:10px;background:#0b2032;color:#e7f8ff;border:1px solid #2b526b}
+.batch-actions button,.batch-actions-bottom button{min-height:48px}
+.batch-secondary{background:linear-gradient(135deg,#176fa8,#168bd2)!important;color:#fff!important}
+.batch-success{background:linear-gradient(135deg,#087f65,#19b981)!important;color:#fff!important}
+.batch-danger{background:linear-gradient(135deg,#a52b50,#dc4165)!important;color:#fff!important}
+.actions{background:#0b2032;border:1px solid #28516b;padding:12px;gap:10px}
+.actions .primary,.primary{background:linear-gradient(135deg,#087fbe,#6c4de6);color:#fff;border:0}
+.batch-actions-bottom{background:#0b2032;border:1px solid #28516b;border-radius:14px;padding:10px}
+.pdf-preview-modal,.privacy-modal{z-index:9999}
+.pdf-preview-card,.privacy-card{background:#f8fbff;color:#142b3a}
+.pdf-preview-head h2,.privacy-card h2{color:#07577f}
+.pdf-preview-actions button{min-height:48px}
+.control{border-color:#31566d}
+.control th{background:linear-gradient(135deg,#15537b,#293a70);color:#fff}
+.control td{background:#102b40;color:#eef8ff}
+.control tr:nth-child(even) td{background:#15364d}
+.control input[type=radio],.control input[type=checkbox]{accent-color:#29d5e8;min-height:20px}
+.section-separator{color:#8beaff}
+@media(max-width:760px){
+  .top{margin:8px 8px 0;padding:62px 12px 12px;border-radius:14px;background:#0c2234}
+  main{margin:0 8px;padding:10px;background:#0a1d2d;border-radius:0 0 14px 14px}
+  .control{min-width:640px}
+  .control th,.control td{padding:8px 6px;font-size:12px}
+  .control .item{font-size:13px}
+  .batch-actions,.batch-actions-bottom{grid-template-columns:1fr;gap:8px}
+  .batch-actions button,.batch-actions-bottom button,.actions button{width:100%;min-height:48px}
+  .actions{display:grid;grid-template-columns:1fr}
+  .actions #status{display:block;overflow-wrap:anywhere}
+  .pdf-preview-modal,.privacy-modal{display:block;overflow-y:auto;padding:env(safe-area-inset-top,8px) 7px calc(12px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch}
+  .pdf-preview-card,.privacy-card{width:100%;max-height:none;height:auto;overflow:visible;margin:0 auto;padding:10px;border-radius:12px}
+  #pdfPreviewFrame{height:52vh;min-height:300px;max-height:600px}
+  .pdf-preview-actions{display:grid;grid-template-columns:1fr;gap:8px}
+  .pdf-preview-actions button{width:100%;min-height:48px}
+  body{padding-bottom:calc(190px + env(safe-area-inset-bottom,0px))!important}
+}
+.pdf-preview-modal.open{opacity:1;visibility:visible;pointer-events:auto}
