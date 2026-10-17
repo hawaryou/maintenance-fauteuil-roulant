@@ -352,6 +352,7 @@ async function generateCurrentOrBatchPDF(){
 document.getElementById('pdf').onclick=()=>document.getElementById('previewPdf').click();
 /* Aperçu PDF : le même moteur jsPDF sert à l'aperçu, au téléchargement et à l'envoi. */
 let previewPdfBlob=null;
+let previewPdfResult=null;
 let previewPdfUrl=null;
 let previewPdfFilename='ENR10-V03.pdf';
 const previewModal=document.getElementById('pdfPreviewModal');
@@ -371,6 +372,7 @@ document.getElementById('previewPdf').onclick=async()=>{
   try{
     button.disabled=true;status.textContent='Génération de l’aperçu PDF…';
     const result=await generateCurrentOrBatchPDF();
+    previewPdfResult=result;
     previewPdfBlob=result.pdf.output('blob');
     previewPdfFilename=getPDFFileName(result);
     if(previewPdfUrl)URL.revokeObjectURL(previewPdfUrl);
@@ -387,37 +389,30 @@ document.getElementById('downloadPreviewPdf').onclick=()=>{
   if(!previewPdfBlob)return;
   const url=URL.createObjectURL(previewPdfBlob);const a=document.createElement('a');a.href=url;a.download=previewPdfFilename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 };
-document.getElementById('sendPreviewPdf').onclick=()=>{
-  if(!previewPdfBlob)return;
-  closePdfPreview();
-  // Le gestionnaire d'envoi existant conserve son fonctionnement et son adresse de destination.
-  document.getElementById('send').click();
-};
-previewModal.addEventListener('click',e=>{if(e.target===previewModal)closePdfPreview();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&previewModal.classList.contains('open'))closePdfPreview();});
-
-document.getElementById('send').onclick=async()=>{
+document.getElementById('sendPreviewPdf').onclick=async()=>{
+  if(!previewPdfResult)return;
+  const result=previewPdfResult;
+  const data=batchFinalized?result.records[0]:result.data;
+  const filename=getPDFFileName(result);
   const status=document.getElementById('status');
   try{
-    status.textContent='Préparation du PDF…';
-    const result=await generateCurrentOrBatchPDF();
-    const data=batchFinalized?result.records[0]:result.data;
-    const filename=batchFinalized?`ENR10-V03_Tournee_${new Date().toISOString().slice(0,10)}_${result.records.length}-fauteuils.pdf`:`ENR10-V03_${data.serie||'maintenance'}_${data.date||''}.pdf`;
-    if(!APPS_SCRIPT_URL || !APPS_SCRIPT_URL.startsWith('https://script.google.com/macros/s/')){
-      status.textContent='URL Google Apps Script non configurée : le PDF va être téléchargé.';
-      result.pdf.save(filename);return;
+    if(!APPS_SCRIPT_URL||!APPS_SCRIPT_URL.startsWith('https://script.google.com/macros/s/')){
+      result.pdf.save(filename);
+      status.textContent='URL Google Apps Script non configurée : PDF téléchargé.';
+      closePdfPreview();return;
     }
-    status.textContent=batchFinalized?'Envoi du dossier de maintenance…':'Envoi du PDF…';
+    status.textContent='Transmission du PDF validé…';
     const b64=result.pdf.output('datauristring').split(',')[1];
     const params=new URLSearchParams({token:APP_TOKEN,pdf_base64:b64,filename,client:data.client,technicien:data.technicien,date:data.date,reference:data.reference,serie:batchFinalized?`${result.records.length} fauteuils`:data.serie});
     await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:params.toString()});
     status.textContent=batchFinalized?`Dossier de ${result.records.length} fauteuils transmis à ${EMAIL_TO}. Signature client unique appliquée.`:`Demande d’envoi transmise à ${EMAIL_TO}. Vérifiez la boîte de réception.`;
-  }catch(e){
-    console.error(e);status.textContent='Erreur lors de la transmission. Le PDF va être téléchargé.';
-    try{const result=await generateCurrentOrBatchPDF();const filename=batchFinalized?`ENR10-V03_Tournee_${new Date().toISOString().slice(0,10)}_${result.records.length}-fauteuils.pdf`:`ENR10-V03_${result.data.serie||'maintenance'}_${result.data.date||''}.pdf`;result.pdf.save(filename)}catch(_){}
-  }
+    closePdfPreview();
+  }catch(e){console.error(e);status.textContent='Erreur lors de la transmission. Vous pouvez télécharger le PDF et réessayer.';}
 };
+previewModal.addEventListener('click',e=>{if(e.target===previewModal)closePdfPreview();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&previewModal.classList.contains('open'))closePdfPreview();});
 
+document.getElementById('send').onclick=()=>document.getElementById('previewPdf').click();
 const batchSaveBottom=document.getElementById('batchSaveBottom');const batchFinishBottom=document.getElementById('batchFinishBottom');batchSaveBottom?.addEventListener('click',function(){saveCurrentItemToBatch();});batchFinishBottom?.addEventListener('click',function(){finishBatch();});
 
 document.getElementById('openPrivacy')?.addEventListener('click',()=>{const m=document.getElementById('privacyModal');m.classList.add('show');m.setAttribute('aria-hidden','false')});function closePrivacy(){const m=document.getElementById('privacyModal');m.classList.remove('show');m.setAttribute('aria-hidden','true')}document.getElementById('closePrivacy')?.addEventListener('click',closePrivacy);document.getElementById('privacyModal')?.addEventListener('click',e=>{if(e.target===e.currentTarget)closePrivacy()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closePrivacy()});
