@@ -94,23 +94,23 @@ function resetFieldsForNext(){
 function startBatch(){
   batchMode=true;batchFinalized=false;batchRecords=[];clearCanvas(sigClient);updateBatchUI();showMessage('Tournée multi-fauteuils démarrée.','success');window.scrollTo({top:0,behavior:'smooth'});
 }
+function hasCurrentBedData(){
+  const hasControls=sections.some(([title,items],si)=>items.some((it,i)=>!!checked(`c_${si}_${i}`)));
+  return !!(val('serie').trim()||val('annee').trim()||val('observations').trim()||val('pieces').trim()||val('sangles').trim()||checked('avisService')||hasControls||Number(val('obsolescence')||1)>1);
+}
 function saveCurrentItemToBatch(){
-  if(!batchMode||batchFinalized)return;
+  if(!batchMode||batchFinalized)return false;
   const d=collect();
-  if(!d.serie.trim()){showMessage('Renseignez le N° de série / parc du fauteuil avant de l’enregistrer.','error');document.getElementById('serie')?.focus();return}
-  d.sigClient='';
-  batchRecords.push(d);
-  updateBatchUI();
-  showMessage(`Fauteuil ${batchRecords.length} enregistré. Préparez le fauteuil suivant.`,'success');
-  resetFieldsForNext();
+  if(!d.serie.trim()){showMessage('Le contrôle en cours n’a pas été ajouté : renseignez son N° de série / parc, puis réessayez.','error');document.getElementById('serie')?.focus();return false;}
+  d.sigClient='';batchRecords.push(d);updateBatchUI();
+  showMessage(`fauteuil ${batchRecords.length} enregistré. Préparez le suivant.`,'success');
+  resetFieldsForNext();return true;
 }
 function finishBatch(){
-  if(!batchMode)return;
-  const currentSerie=val('serie').trim();
-  if(currentSerie&&!batchFinalized){ saveCurrentItemToBatch(); }
-  if(batchRecords.length===0){showMessage('Enregistrez au moins un fauteuil avant de terminer la tournée.','error');return;}
-  batchFinalized=true;updateBatchUI();
-  document.getElementById('clientSignatureBlock')?.scrollIntoView({behavior:'smooth',block:'center'});
+  if(!batchMode||batchFinalized)return;
+  if(hasCurrentBedData()){const saved=saveCurrentItemToBatch();if(!saved)return;}
+  if(batchRecords.length===0){showMessage('Réalisez puis enregistrez au moins un appareil avant de terminer la tournée.','error');return;}
+  batchFinalized=true;updateBatchUI();document.getElementById('clientSignatureBlock')?.scrollIntoView({behavior:'smooth',block:'center'});
   showMessage('La tournée est terminée. Faites signer le client une seule fois.','success');
 }
 function cancelBatch(){
@@ -411,3 +411,7 @@ document.getElementById('send').onclick=async()=>{
     try{const result=await generateCurrentOrBatchPDF();const filename=batchFinalized?`ENR10-V03_Tournee_${new Date().toISOString().slice(0,10)}_${result.records.length}-fauteuils.pdf`:`ENR10-V03_${result.data.serie||'maintenance'}_${result.data.date||''}.pdf`;result.pdf.save(filename)}catch(_){}
   }
 };
+
+const batchSaveBottom=document.getElementById('batchSaveBottom');const batchFinishBottom=document.getElementById('batchFinishBottom');batchSaveBottom?.addEventListener('click',function(){saveCurrentItemToBatch();});batchFinishBottom?.addEventListener('click',function(){finishBatch();});
+
+document.getElementById('openPrivacy')?.addEventListener('click',()=>{const m=document.getElementById('privacyModal');m.classList.add('show');m.setAttribute('aria-hidden','false')});function closePrivacy(){const m=document.getElementById('privacyModal');m.classList.remove('show');m.setAttribute('aria-hidden','true')}document.getElementById('closePrivacy')?.addEventListener('click',closePrivacy);document.getElementById('privacyModal')?.addEventListener('click',e=>{if(e.target===e.currentTarget)closePrivacy()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closePrivacy()});
