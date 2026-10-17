@@ -29,9 +29,20 @@ if(obsolescence && obsolescenceValue){
   obsolescence.addEventListener('input',syncObsolescence);
   syncObsolescence();
 }
-function setupCanvas(id){const c=document.getElementById(id),ctx=c.getContext('2d');function resize(){const r=c.getBoundingClientRect(),d=devicePixelRatio||1;c.width=r.width*d;c.height=r.height*d;ctx.scale(d,d);ctx.lineWidth=2;ctx.lineCap='round'}resize();let drawing=false,last=null;c.addEventListener('pointerdown',e=>{drawing=true;last=[e.offsetX,e.offsetY];c.setPointerCapture(e.pointerId)});c.addEventListener('pointermove',e=>{if(!drawing)return;ctx.beginPath();ctx.moveTo(last[0],last[1]);ctx.lineTo(e.offsetX,e.offsetY);ctx.stroke();last=[e.offsetX,e.offsetY]});c.addEventListener('pointerup',()=>drawing=false);c.addEventListener('pointercancel',()=>drawing=false);return c}const sigTech=setupCanvas('sigTech'),sigClient=setupCanvas('sigClient');document.querySelectorAll('.clear').forEach(b=>b.onclick=()=>{const c=document.getElementById(b.dataset.canvas);c.getContext('2d').clearRect(0,0,c.width,c.height)});
+function setupCanvas(id){const c=document.getElementById(id),ctx=c.getContext('2d');function resize(){const r=c.getBoundingClientRect(),d=devicePixelRatio||1;c.width=r.width*d;c.height=r.height*d;ctx.scale(d,d);ctx.lineWidth=2;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#000000'}resize();let drawing=false,last=null;c.addEventListener('pointerdown',e=>{drawing=true;last=[e.offsetX,e.offsetY];ctx.strokeStyle='#000000';c.setPointerCapture(e.pointerId)});c.addEventListener('pointermove',e=>{if(!drawing)return;ctx.beginPath();ctx.moveTo(last[0],last[1]);ctx.lineTo(e.offsetX,e.offsetY);ctx.stroke();last=[e.offsetX,e.offsetY]});c.addEventListener('pointerup',()=>drawing=false);c.addEventListener('pointercancel',()=>drawing=false);return c}const sigTech=setupCanvas('sigTech'),sigClient=setupCanvas('sigClient');document.querySelectorAll('.clear').forEach(b=>b.onclick=()=>{const c=document.getElementById(b.dataset.canvas);c.getContext('2d').clearRect(0,0,c.width,c.height)});
+function signatureDataURL(canvas){
+ if(!canvas)return '';
+ try{
+  const rect=canvas.getBoundingClientRect(),width=Math.max(1,Math.round(rect.width||canvas.width)),height=Math.max(1,Math.round(rect.height||canvas.height));
+  const out=document.createElement('canvas');out.width=width;out.height=height;const ctx=out.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,width,height);
+  ctx.drawImage(canvas,0,0,canvas.width,canvas.height,0,0,width,height);
+  const image=ctx.getImageData(0,0,width,height),pixels=image.data;let ink=false;
+  for(let i=0;i<pixels.length;i+=4){if(pixels[i+3]>12&&(pixels[i]<245||pixels[i+1]<245||pixels[i+2]<245)){ink=true;pixels[i]=0;pixels[i+1]=0;pixels[i+2]=0;}}
+  ctx.putImageData(image,0,0);return ink?out.toDataURL('image/png'):'';
+ }catch(err){console.error('Capture de signature impossible',err);return '';}
+}
 function val(id){return document.getElementById(id)?.value||''}function checked(name){return document.querySelector(`input[name="${name}"]:checked`)?.value||''}
-function collect(){const controls={};sections.forEach(([title,items],si)=>items.forEach((it,i)=>controls[it]=checked(`c_${si}_${i}`)));return {maintenance:checked('maintenance'),obsolescence:val('obsolescence'),marque:val('marque'),annee:val('annee'),serie:val('serie'),accessoires:checked('accessoires'),client:val('client'),localisation:val('localisation'),adresse:val('adresse'),ville:val('ville'),reference:val('reference'),observations:val('observations'),pieces:val('pieces'),date:val('date'),technicien:val('technicien'),controls, sigTech:sigTech.toDataURL('image/png'),sigClient:sigClient.toDataURL('image/png')}}
+function collect(){const controls={};sections.forEach(([title,items],si)=>items.forEach((it,i)=>controls[it]=checked(`c_${si}_${i}`)));return {maintenance:checked('maintenance'),obsolescence:val('obsolescence'),marque:val('marque'),annee:val('annee'),serie:val('serie'),accessoires:checked('accessoires'),client:val('client'),localisation:val('localisation'),adresse:val('adresse'),ville:val('ville'),reference:val('reference'),observations:val('observations'),pieces:val('pieces'),date:val('date'),technicien:val('technicien'),controls, sigTech:signatureDataURL(sigTech),sigClient:signatureDataURL(sigClient)}}
 
 /* ==========================================================
    MODE MAINTENANCE DE PLUSIEURS FAUTEUILS — signature client unique
@@ -129,7 +140,7 @@ function canvasHasInk(canvas){
 }
 function applyClientSignatureToBatch(){
   if(!canvasHasInk(sigClient)) throw new Error('La signature du client est nécessaire avant de générer le dossier.');
-  const sig=sigClient.toDataURL('image/png');
+  const sig=signatureDataURL(sigClient);
   return batchRecords.map(d=>({...d,sigClient:sig}));
 }
 
