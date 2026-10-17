@@ -108,8 +108,12 @@ function startBatch(){
   batchMode=true;batchFinalized=false;batchRecords=[];clearCanvas(sigClient);updateBatchUI();showMessage('Tournée multi-fauteuils démarrée.','success');window.scrollTo({top:0,behavior:'smooth'});
 }
 function hasCurrentBedData(){
+  // Ne pas ignorer une fiche en cours : les champs propres à l’équipement et les contrôles comptent.
   const hasControls=sections.some(([title,items],si)=>items.some((it,i)=>!!checked(`c_${si}_${i}`)));
-  return !!(val('serie').trim()||val('annee').trim()||val('observations').trim()||val('pieces').trim()||val('sangles').trim()||checked('avisService')||hasControls||Number(val('obsolescence')||1)>1);
+  const equipmentFields=['serie','annee','observations','pieces','sangles','serieBar','seriePot'];
+  const hasEquipmentText=equipmentFields.some(id=>val(id).trim()!=='');
+  const hasEquipmentChecks=['avisService','barrieres','potence','env','accessoires','securite'].some(id=>checked(id));
+  return hasEquipmentText||hasEquipmentChecks||hasControls||Number(val('obsolescence')||1)>1;
 }
 function saveCurrentItemToBatch(){
   if(!batchMode||batchFinalized)return false;
@@ -345,18 +349,7 @@ async function generateCurrentOrBatchPDF(){
   return makePDF();
 }
 
-document.getElementById('pdf').onclick=async()=>{
-  try{
-    const result=await generateCurrentOrBatchPDF();
-    if(batchFinalized){
-      result.pdf.save(`ENR10-V03_Tournee_${new Date().toISOString().slice(0,10)}_${result.records.length}-fauteuils.pdf`);
-      showMessage(`${result.records.length} certificats regroupés dans un seul PDF. Signature client unique appliquée.`,'success');
-    }else{
-      const data=result.data;result.pdf.save(`ENR10-V03_${data.serie||'maintenance'}_${data.date||''}.pdf`);
-    }
-  }catch(e){console.error(e);showMessage(e.message||'Erreur lors de la génération du PDF.','error')}
-};
-
+document.getElementById('pdf').onclick=()=>document.getElementById('previewPdf').click();
 /* Aperçu PDF : le même moteur jsPDF sert à l'aperçu, au téléchargement et à l'envoi. */
 let previewPdfBlob=null;
 let previewPdfUrl=null;
