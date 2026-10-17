@@ -28,6 +28,7 @@
 .scan-row{display:flex;gap:8px;align-items:stretch}.scan-row>input{flex:1;min-width:0}.scan-actions{display:flex;gap:6px;flex-wrap:wrap}.scan-button,.photo-button,.stop-button,.zoom-button{border:0;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer}.scan-button{background:#4f46e5;color:#fff}.barcode-button{background:#374151}.photo-button{width:100%;margin-top:7px;background:#5f6368;color:#fff}.scanner{display:none;margin-top:10px;padding:10px;background:#000;border-radius:12px;overflow:hidden}.reader{position:relative;width:100%;overflow:hidden;border-radius:8px}.barcode-reader{position:relative;background:#000;min-height:220px}.barcode-reader:after{content:"";position:absolute;left:3%;right:3%;top:42%;height:26%;border:3px solid rgba(255,255,255,.9);border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.18);pointer-events:none}.scan-overlay-2d{position:absolute;left:50%;top:50%;width:62%;aspect-ratio:1;transform:translate(-50%,-50%);border:3px solid rgba(255,255,255,.9);border-radius:10px;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;z-index:3}.scan-overlay-2d span{background:rgba(0,0,0,.65);color:#fff;padding:5px 9px;border-radius:6px;font-size:13px;font-weight:700}.scanner-title{color:#fff;text-align:center;font-weight:700;margin-bottom:8px}.scan-hint{color:#ddd;text-align:center;font-size:12px;margin:8px 4px;line-height:1.4}.scanner-tools{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.zoom-button{flex:1;min-width:75px;background:#fff;color:#222}.stop-button{background:#d93025;color:#fff}.hidden-file{display:none}.serial-inline{display:block;margin-top:7px}.serial-inline .scan-row{margin-top:5px}
 @media(max-width:600px){.scan-row{flex-direction:column}.scan-actions{display:grid;grid-template-columns:1fr 1fr}.scan-actions .scan-button{width:100%;min-height:44px}.scanner-tools .zoom-button{min-height:42px}.stop-button{width:100%;min-height:44px}}
 </style>
+<script id="strip-chatgpt-tracking">try{const u=new URL(location.href);if(/chatgpt/i.test(u.searchParams.get('utm_source')||'')){u.searchParams.delete('utm_source');history.replaceState(null,'',u.pathname+(u.search?'?'+u.searchParams.toString():'')+u.hash)}}catch(e){}</script>
 </head>
 <body>
 <a class="hub-menu" href="https://hawaryou.github.io/HUB-euromed/" aria-label="Menu EuroMed — ouvrir le HUB" title="Menu"><span class="hub-menu-icon" aria-hidden="true"><span></span><span></span><span></span></span><span class="hub-menu-label">Menu</span><span class="hub-menu-arrow" aria-hidden="true">↗</span></a>
@@ -133,7 +134,8 @@
     </div>
   </section>
 
-  <div class="actions">
+  <section class="batch-actions batch-actions-bottom" aria-label="Actions de tournée en bas de page"><button type="button" id="batchSaveBottom" class="batch-secondary" disabled>💾 Enregistrer cet appareil et passer au suivant</button><button type="button" id="batchFinishBottom" class="batch-success" disabled>✍️ Enregistrer la tournée et faire signer le client</button></section>
+<div class="actions">
     <button id="previewPdf" class="preview-button" type="button">👁 Aperçu du PDF</button>
     <button id="pdf" class="primary">Télécharger le PDF</button>
     <button id="send" class="primary">Générer le PDF et envoyer par e-mail</button>
@@ -164,6 +166,16 @@
   </div>
 </div>
 
+<div id="privacyModal" class="privacy-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="privacyTitle">
+  <div class="privacy-card"><button type="button" id="closePrivacy" class="modal-close" aria-label="Fermer la notice">✕</button>
+    <h2 id="privacyTitle">Confidentialité et données personnelles</h2>
+    <p>Cette fiche traite les informations saisies pour réaliser et documenter la maintenance des équipement médical, puis transmettre le PDF au destinataire EuroMed configuré.</p>
+    <h3>Données concernées</h3><p>Les informations de l’équipement, du client/établissement, de localisation, de l’intervention, les observations et les signatures saisies dans la fiche.</p>
+    <h3>Transmission</h3><p>Lors d’un envoi, le PDF et certains champs de la fiche sont transmis au service Google Apps Script configuré et envoyés à l’adresse EuroMed indiquée dans le script. Le scan de code utilise la caméra uniquement après autorisation du navigateur. Des bibliothèques tierces sont chargées depuis des CDN.</p>
+    <h3>Bonnes pratiques</h3><p>Ne saisissez pas de données de santé ou d’informations personnelles non nécessaires. N’utilisez la fiche que sur un appareil et un réseau autorisés, et vérifiez le destinataire avant l’envoi.</p>
+    <h3>À compléter par EuroMed avant déploiement</h3><p>Identité et coordonnées du responsable de traitement, base légale, durée de conservation, modalités d’exercice des droits, contact confidentialité, et informations sur les prestataires/sous-traitants. Cette notice ne constitue pas à elle seule une garantie de conformité RGPD.</p>
+  </div>
+</div>
 <div id="scanSuccessModal" class="scan-success-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="scanSuccessTitle">
   <div class="scan-success-card">
     <div class="scan-success-icon">✓</div>
@@ -175,10 +187,10 @@
   </div>
 </div>
 
-<footer>ENR10-V03 · Fiche de maintenance fauteuil roulant manuel · EuroMed</footer>
+<footer>ENR10-V03 · Fiche de maintenance fauteuil roulant manuel · EuroMed · <button type="button" id="openPrivacy" class="privacy-link">Confidentialité et données personnelles</button></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v=20261017-euromed-all-wheel"></script>
 </body>
 </html>
