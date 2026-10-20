@@ -21,6 +21,7 @@
      }throw error;
    }
  };
- window.addEventListener('online',async()=>{const items=await all();for(const x of items)if(x.state==='pending')await send(x.id);refresh()});
- window.addEventListener('offline',refresh);window.addEventListener('load',refresh);setTimeout(refresh,1200);
+ async function flushPending(){if(!navigator.onLine)return;const items=await all();for(const x of items)if(x.state==='pending')await send(x.id);refresh()}
+ window.addEventListener('online',flushPending);
+ window.addEventListener('offline',refresh);window.addEventListener('load',()=>{refresh();flushPending()});setTimeout(()=>{refresh();flushPending()},1200);
 })();
