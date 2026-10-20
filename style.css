@@ -289,3 +289,22 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   body{padding-bottom:calc(190px + env(safe-area-inset-bottom,0px))!important}
 }
 .pdf-preview-modal.open{opacity:1;visibility:visible;pointer-events:auto}
+
+
+/* EuroMed HUB — choix du thème clair/sombre */
+.theme-toggle{position:fixed;z-index:10050;top:12px;right:12px;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:10px 14px;border:1px solid #48d8f0;border-radius:999px;background:linear-gradient(135deg,#123b58,#30245c);color:#f4fbff;font:700 14px Arial,Helvetica,sans-serif;box-shadow:0 6px 18px #0003;cursor:pointer;touch-action:manipulation}
+.theme-toggle:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}
+@media(max-width:760px){.theme-toggle{top:calc(8px + env(safe-area-inset-top,0px));right:8px;min-height:44px;padding:9px 11px;font-size:13px}.top{padding-top:58px!important}}
+html[data-theme="light"] body{background:#f2f7fb!important;color:#172b3a!important}
+html[data-theme="light"] main,html[data-theme="light"] .title,html[data-theme="light"] .batch-panel,html[data-theme="light"] .form-section,html[data-theme="light"] .section,html[data-theme="light"] .card,html[data-theme="light"] .panel{background-color:#fff!important;color:#172b3a!important}
+html[data-theme="light"] h1,html[data-theme="light"] h2,html[data-theme="light"] h3,html[data-theme="light"] label,html[data-theme="light"] p,html[data-theme="light"] legend,html[data-theme="light"] .batch-help{color:#20394b}
+html[data-theme="light"] input:not([type="radio"]):not([type="checkbox"]),html[data-theme="light"] select,html[data-theme="light"] textarea{background:#fff!important;color:#152c3d!important;border-color:#9db4c4!important}
+html[data-theme="light"] .hub-menu{box-shadow:0 5px 16px #16344a20}
+html[data-theme="light"] .pdf-preview-card,html[data-theme="light"] .privacy-card{background:#fff!important;color:#172b3a!important}
+html[data-theme="light"] .privacy-content{color:#30485a!important}
+html[data-theme="light"] .privacy-notice{background:linear-gradient(135deg,#eaf7ff,#f2edff)!important;border-color:#a5c8dc!important}
+html[data-theme="light"] .privacy-notice summary{color:#075985!important}
+html[data-theme="light"] .privacy-warning{background:#fff4d8!important;color:#714b00!important}
+html[data-theme="light"] .batch-panel{border-color:#b8d9e9!important;box-shadow:0 8px 24px #173c5514}
+html[data-theme="light"] .pdf-preview-modal,html[data-theme="light"] .privacy-modal{background:#172b3acc!important}
+@media(prefers-reduced-motion:no-preference){.theme-toggle{transition:background .18s ease,transform .18s ease}.theme-toggle:active{transform:scale(.97)}}
