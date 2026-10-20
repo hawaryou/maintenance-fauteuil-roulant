@@ -276,11 +276,13 @@ function renderPDFPage(pdf,d){
   if(y>240){pdf.addPage();y=12}
   pdf.setFont('helvetica','bold');pdf.text('OBSERVATIONS :',M,y+4);pdf.text('PIÈCES CHANGÉES :',110,y+4);pdf.rect(M,y+6,90,35);pdf.rect(110,y+6,90,35);
   const obsColor={1:[46,125,50],2:[139,195,74],3:[251,192,45],4:[239,108,0],5:[198,40,40]}[Number(d.obsolescence)]||[120,120,120];pdf.setFillColor(...obsColor);pdf.roundedRect(M+2,y+8,42,8,1.5,1.5,'F');pdf.setTextColor(255,255,255);pdf.setFont('helvetica','bold');pdf.text(`OBSOLESCENCE : ${d.obsolescence||'—'} / 5`,M+23,y+13.3,{align:'center'});pdf.setTextColor(0,0,0);pdf.setFont('helvetica','normal');pdf.text(pdf.splitTextToSize(d.observations||'',84),M+3,y+21);pdf.text(pdf.splitTextToSize(d.pieces||'',86),112,y+11);y+=45;
+
+  // Garder les signatures entièrement sur la page : le PDF A4 s'arrête à 297 mm.
+  if(y+55>285){pdf.addPage();y=12;}
   // Zone signatures : on réserve une hauteur suffisante et on ajoute l'image
   // de signature en conservant son ratio. On recadre également les pixels
   // transparents autour du tracé pour éviter l'effet "signature coupée".
-  if(y>244){pdf.addPage();y=12;}
-  pdf.text(`Fait le : ${d.date||'—'}    Technicien : ${d.technicien||'—'}`,M,y+5);
+pdf.text(`Fait le : ${d.date||'—'}    Technicien : ${d.technicien||'—'}`,M,y+5);
   pdf.setFont('helvetica','bold');
   pdf.text('Signature du technicien',M,y+13);
   pdf.text('Signature du client',110,y+13);
