@@ -407,7 +407,7 @@ document.getElementById('sendPreviewPdf').onclick=async()=>{
     const b64=result.pdf.output('datauristring').split(',')[1];
     const params=new URLSearchParams({token:APP_TOKEN,pdf_base64:b64,filename,client:data.client,technicien:data.technicien,date:data.date,reference:data.reference,serie:batchFinalized?`${result.records.length} fauteuils`:data.serie});
     const response=await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:params.toString()});
-  if(response.status===202){const queued='PDF saved in the local send queue. It will be sent when the connection returns; then verify email delivery.';status.textContent=queued;pdfPreviewStatus.textContent=queued;document.getElementById('confirmSendPdf').disabled=true;showMessage(queued,'success');return;}
+  if(response.status===202){const queued='📴 PDF généré en mode hors ligne et ajouté à la liste d’attente hors connexion. L’aperçu va se fermer. Il sera envoyé lorsque la connexion reviendra ; vérifiez ensuite la réception du courriel.';status.textContent=queued;if(typeof showMessage==='function')showMessage(queued,'success');closePdfPreview();return;}
     status.textContent=batchFinalized?`Dossier de ${result.records.length} fauteuils transmis à ${EMAIL_TO}. Signature client unique appliquée.`:`Demande d’envoi transmise à ${EMAIL_TO}. Vérifiez la boîte de réception.`;
     closePdfPreview();
   }catch(e){console.error(e);status.textContent='Erreur lors de la transmission. Vous pouvez télécharger le PDF et réessayer.';}
