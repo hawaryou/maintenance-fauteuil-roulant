@@ -375,3 +375,7 @@ html[data-theme="light"] body .obsolescence-slider-wrap input[type="range"]{back
 html[data-theme="light"] body .obsolescence-slider-wrap input[type="range"]::-webkit-slider-thumb{background:var(--obs-color,#2e7d32)!important}
 html[data-theme="light"] body .obsolescence-slider-wrap input[type="range"]::-moz-range-thumb{background:var(--obs-color,#2e7d32)!important}
 html[data-theme="dark"] body .obsolescence-slider-wrap input[type="range"]{background:linear-gradient(to right,#2e7d32 0%,#8bc34a 25%,#fbc02d 50%,#ef6c00 75%,#c62828 100%)!important}
+
+/* Les contrôles restent visibles en haut, mais ne recouvrent jamais les boutons des fenêtres modales. */
+.theme-toggle{z-index:9000!important}
+.pdf-preview-modal,.privacy-modal,.scan-success-modal{z-index:20000!important}
