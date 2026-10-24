@@ -1,51 +1,118 @@
 /**
- * ENR10-V03 — Réception et envoi des fiches PDF fauteuil roulant manuel.
- * Dans Apps Script : déployer ce projet comme application Web, exécuter en tant que propriétaire.
+ * ENR10-V04 — Réception et envoi des fiches PDF fauteuil roulant manuel.
+ * Fonctionnement aligné sur le Code.gs ENR08 de la maintenance lit médicalisé.
+ * Déployer comme application Web, exécutée en tant que propriétaire.
  */
 const DESTINATAIRE_ENR10 = 'valentineuromed@gmail.com';
 const NOM_EXPEDITEUR_ENR10 = 'EuroMed - Maintenance fauteuil roulant';
 
 function doGet() {
-  return ContentService.createTextOutput('ENR10-V03 : service actif')
+  return ContentService
+    .createTextOutput('ENR10-V04 : service actif')
     .setMimeType(ContentService.MimeType.TEXT);
 }
 
 function doPost(e) {
   try {
-    const p = e && e.parameter ? e.parameter : {};
-    const tokenAttendu = PropertiesService.getScriptProperties().getProperty('APP_TOKEN');
-    if (tokenAttendu && p.token !== tokenAttendu) throw new Error('Token invalide.');
-    const base64 = String(p.pdf_base64 || '');
+    if (!e || !e.parameter) throw new Error('Aucune donnée reçue.');
+
+    const token = PropertiesService.getScriptProperties().getProperty('APP_TOKEN');
+    if (token && e.parameter.token !== token) {
+      return jsonENR10_({ok:false, error:'Token invalide'});
+    }
+
+    const filename = nomFichierENR10_(e.parameter.filename || 'ENR10-V04.pdf');
+    const base64 = e.parameter.pdf_base64 || '';
     if (!base64) throw new Error('PDF manquant.');
-    if (base64.length > 11000000) throw new Error('PDF trop volumineux pour cet envoi.');
-    const nom = nomFichierENR10_(p.filename || 'ENR10-V03.pdf');
-    const blob = Utilities.newBlob(Utilities.base64Decode(base64), 'application/pdf', nom);
-    const reference = texteENR10_(p.reference, 180);
-    const sujet = 'Maintenance fauteuil roulant manuel — ENR10-V03' + (reference ? ' — ' + reference : '');
+
+    const bytes = Utilities.base64Decode(base64);
+    if (
+      bytes.length < 5 ||
+      bytes[0] !== 37 ||
+      bytes[1] !== 80 ||
+      bytes[2] !== 68 ||
+      bytes[3] !== 70 ||
+      bytes[4] !== 45
+    ) {
+      throw new Error('Le contenu reçu n’est pas un PDF valide.');
+    }
+
+    const blob = Utilities.newBlob(bytes, 'application/pdf', filename);
+
+    const client = texteENR10_(e.parameter.client, 250);
+    const technicien = texteENR10_(e.parameter.technicien, 180);
+    const date = texteENR10_(e.parameter.date, 40);
+    const reference = texteENR10_(e.parameter.reference, 180);
+    const serie = texteENR10_(e.parameter.serie, 250);
+
+    const sujet = 'Fiche de maintenance fauteuil roulant manuel – ENR10-V04' +
+      (reference ? ' – ' + reference : '');
+
     const corps = [
-      'Bonjour,', '',
-      'Veuillez trouver ci-joint la fiche de maintenance fauteuil roulant manuel ENR10-V03.',
-      '', 'Client / établissement : ' + texteENR10_(p.client, 250),
-      'Technicien : ' + texteENR10_(p.technicien, 180),
-      'Date : ' + texteENR10_(p.date, 40),
+      'Bonjour,',
+      '',
+      'Veuillez trouver ci-joint la fiche de maintenance fauteuil roulant manuel ENR10.',
+      '',
+      'Client : ' + client,
+      'Technicien : ' + technicien,
+      'Date : ' + date,
       'Référence intervention : ' + reference,
-      'N° série / parc : ' + texteENR10_(p.serie, 250),
-      '', 'Message généré automatiquement par EuroMed.', '', 'Cordialement,', 'EuroMed'
+      'N° série / parc : ' + serie,
+      '',
+      'Le PDF a été généré automatiquement depuis la fiche EuroMed.',
+      '',
+      'Cordialement,',
+      'EuroMed'
     ].join('\n');
-    MailApp.sendEmail({to: DESTINATAIRE_ENR10, subject: sujet, body: corps, name: NOM_EXPEDITEUR_ENR10, attachments: [blob]});
-    return jsonENR10_({ok:true, message:'Fiche fauteuil roulant envoyée.'});
+
+    MailApp.sendEmail({
+      to: DESTINATAIRE_ENR10,
+      subject: sujet,
+      body: corps,
+      name: NOM_EXPEDITEUR_ENR10,
+      attachments: [blob]
+    });
+
+    console.log('ENR10 : MailApp.sendEmail terminé sans erreur. Fichier : ' + filename);
+
+    return jsonENR10_({ok:true, message:'Fiche fauteuil roulant transmise à MailApp.'});
   } catch (err) {
-    console.error(err);
-    return jsonENR10_({ok:false, error:String(err && err.message ? err.message : err)});
+    const message = String(err && err.message ? err.message : err);
+    console.error('ENR10 — ÉCHEC : ' + message);
+    return jsonENR10_({ok:false, error:message});
   }
 }
 
 function jsonENR10_(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
 }
+
 function texteENR10_(v, max) {
-  return String(v || '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, max);
+  return String(v || '')
+    .replace(/[\u0000-\u001F\u007F]/g, ' ')
+    .trim()
+    .slice(0, max);
 }
+
 function nomFichierENR10_(v) {
-  return String(v || 'ENR10-V03.pdf').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120) || 'ENR10-V03.pdf';
+  return String(v || 'ENR10-V04.pdf')
+    .replace(/[^a-zA-Z0-9._-]/g, '_')
+    .slice(0, 120) || 'ENR10-V04.pdf';
+}
+
+/**
+ * Diagnostic manuel : affiche les informations de quotas et de service.
+ * N'envoie aucun courriel.
+ */
+function diagnosticENR10() {
+  const diagnostic = {
+    date: new Date().toISOString(),
+    destinataire: DESTINATAIRE_ENR10,
+    quotaRestant: MailApp.getRemainingDailyQuota(),
+    service: 'ENR10-V04'
+  };
+  console.log(JSON.stringify(diagnostic));
+  return diagnostic;
 }
