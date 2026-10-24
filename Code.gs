@@ -1,41 +1,40 @@
-
 /**
- * EUROMED — ENR08-V07
- * Réception des PDF en ligne et hors connexion.
- * Diagnostic persistant de chaque requête.
+ * EUROMED — ENR10-V05
+ * Réception et envoi des fiches PDF de maintenance fauteuil roulant,
+ * en ligne ou après remise en réseau de la file d'attente hors connexion.
+ *
+ * Déploiement : application Web exécutée en tant que propriétaire du script.
  */
 
-const DESTINATAIRE = 'valentineuromed@gmail.com';
-const NOM_EXPEDITEUR = 'EuroMed - Fiches de maintenance';
-const CLE_DIAGNOSTIC = 'ENR08_DERNIER_DIAGNOSTIC';
+const DESTINATAIRE_ENR10 = 'valentineuromed@gmail.com';
+const NOM_EXPEDITEUR_ENR10 = 'EuroMed - Maintenance fauteuil roulant';
+const CLE_DIAGNOSTIC_ENR10 = 'ENR10_DERNIER_DIAGNOSTIC';
 
 function doGet() {
-return ContentService
-  .createTextOutput('ENR08-V07 : service actif')
-  .setMimeType(ContentService.MimeType.TEXT);
+  return ContentService
+    .createTextOutput('ENR10-V05 : service actif')
+    .setMimeType(ContentService.MimeType.TEXT);
 }
 
-function enregistrerDiagnostic_(diagnostic) {
+function enregistrerDiagnosticENR10_(diagnostic) {
   diagnostic.date = new Date().toISOString();
-
   PropertiesService.getScriptProperties().setProperty(
-    CLE_DIAGNOSTIC,
+    CLE_DIAGNOSTIC_ENR10,
     JSON.stringify(diagnostic, null, 2)
   );
-
-  console.log('[ENR08-DIAGNOSTIC] ' +
-    JSON.stringify(diagnostic));
+  console.log('[ENR10-DIAGNOSTIC] ' + JSON.stringify(diagnostic));
 }
 
 function doPost(e) {
   const diagnostic = {
+    service: 'ENR10-V05',
     statut: 'DEBUT',
     etapes: [],
     parametres: [],
     tailleCorps: null,
     tailleBase64: 0,
     taillePdfOctets: 0,
-    destinataire: DESTINATAIRE,
+    destinataire: DESTINATAIRE_ENR10,
     erreur: null
   };
 
@@ -44,30 +43,26 @@ function doPost(e) {
       heure: new Date().toISOString(),
       message: message
     });
-    console.log('[ENR08] ' + message);
+    console.log('[ENR10] ' + message);
   }
 
   try {
-    // Enregistrer immédiatement la réception.
     diagnostic.statut = 'REQUETE_RECUE';
     etape('doPost exécuté : début du traitement.');
-    enregistrerDiagnostic_(diagnostic);
+    enregistrerDiagnosticENR10_(diagnostic);
 
     if (!e || !e.parameter) {
-      throw new Error('Objet de requête ou paramètres absents.');
+      throw new Error('Aucune donnée reçue : paramètres de requête absents.');
     }
 
     const p = e.parameter;
     diagnostic.parametres = Object.keys(p);
-
     diagnostic.tailleCorps =
-      e.postData && typeof e.postData.length === 'number'
-        ? e.postData.length
+      e.postData && typeof e.postData.contents === 'string'
+        ? e.postData.contents.length
         : null;
 
-    etape('Paramètres reçus : ' +
-      diagnostic.parametres.join(', '));
-
+    etape('Paramètres reçus : ' + diagnostic.parametres.join(', '));
     etape('Taille du corps : ' + diagnostic.tailleCorps);
 
     const tokenAttendu = PropertiesService
@@ -78,63 +73,55 @@ function doPost(e) {
       throw new Error('Token invalide ou absent.');
     }
 
-    const base64 = p.pdf_base64 || '';
+    const base64 = String(p.pdf_base64 || '');
     diagnostic.tailleBase64 = base64.length;
-
     etape('Taille PDF base64 : ' + base64.length);
 
     if (!base64) {
-      throw new Error(
-        'PDF absent : le paramètre pdf_base64 est vide.'
-      );
+      throw new Error('PDF absent : le paramètre pdf_base64 est vide.');
     }
 
-    const nomFichier = sanitizeFilename_(
-      p.filename || 'fiche-maintenance.pdf'
+    const nomFichier = sanitizeFilenameENR10_(
+      p.filename || 'maintenance-fauteuil-roulant.pdf'
     );
 
     const octets = Utilities.base64Decode(base64);
     diagnostic.taillePdfOctets = octets.length;
 
-    if (!octets.length) {
-      throw new Error('Le PDF décodé est vide.');
+    if (octets.length < 5) {
+      throw new Error('Le PDF décodé est vide ou trop court.');
     }
 
-    const signature = octets.slice(0, 5)
-      .map(function(b) {
-        return String.fromCharCode(b);
-      })
-      .join('');
+    const signature = octets.slice(0, 5).map(function(b) {
+      return String.fromCharCode(b);
+    }).join('');
 
     if (signature !== '%PDF-') {
-      throw new Error(
-        'Le fichier reçu ne possède pas une signature PDF valide.'
-      );
+      throw new Error('Le fichier reçu ne possède pas une signature PDF valide.');
     }
 
-    const pdf = Utilities.newBlob(
-      octets,
-      'application/pdf',
-      nomFichier
-    );
+    const pdf = Utilities.newBlob(octets, 'application/pdf', nomFichier);
+    etape('PDF vérifié : ' + nomFichier + ' (' + octets.length + ' octets).');
 
-    etape('PDF vérifié : ' + nomFichier +
-      ' (' + octets.length + ' octets).');
+    const client = texteENR10_(p.client, 250);
+    const technicien = texteENR10_(p.technicien, 180);
+    const date = texteENR10_(p.date, 40);
+    const reference = texteENR10_(p.reference, 180);
+    const serie = texteENR10_(p.serie, 250);
 
-    const sujet =
-      'Fiche de maintenance lit médicalisé' +
-      (p.reference ? ' – ' + p.reference : '');
+    const sujet = 'Fiche de maintenance fauteuil roulant' +
+      (reference ? ' – ' + reference : '');
 
     const corps = [
       'Bonjour,',
       '',
-      'Veuillez trouver ci-joint la fiche de maintenance.',
+      'Veuillez trouver ci-joint la fiche de maintenance du fauteuil roulant.',
       '',
-      'Client : ' + (p.client || ''),
-      'Technicien : ' + (p.technicien || ''),
-      'Date : ' + (p.date || ''),
-      'Référence intervention : ' + (p.reference || ''),
-      'N° série / parc : ' + (p.serie || ''),
+      'Client : ' + client,
+      'Technicien : ' + technicien,
+      'Date : ' + date,
+      'Référence intervention : ' + reference,
+      'N° série / parc : ' + serie,
       'Fichier : ' + nomFichier,
       '',
       'Cordialement,',
@@ -142,96 +129,90 @@ function doPost(e) {
     ].join('\n');
 
     diagnostic.statut = 'ENVOI_EMAIL_EN_COURS';
-    enregistrerDiagnostic_(diagnostic);
-    etape('Tentative d’envoi à ' + DESTINATAIRE);
+    enregistrerDiagnosticENR10_(diagnostic);
+    etape('Tentative d’envoi à ' + DESTINATAIRE_ENR10);
 
-    GmailApp.sendEmail(
-      DESTINATAIRE,
-      sujet,
-      corps,
-      {
-        name: NOM_EXPEDITEUR,
-        attachments: [pdf]
-      }
-    );
+    // Même service d'envoi que le Code.gs du lit médicalisé qui fonctionne.
+    MailApp.sendEmail({
+      to: DESTINATAIRE_ENR10,
+      subject: sujet,
+      body: corps,
+      name: NOM_EXPEDITEUR_ENR10,
+      attachments: [pdf]
+    });
 
-    diagnostic.statut = 'APPEL_GMAIL_TERMINE';
-    etape('GmailApp.sendEmail terminé sans exception.');
-    enregistrerDiagnostic_(diagnostic);
+    diagnostic.statut = 'APPEL_MAILAPP_TERMINE';
+    etape('MailApp.sendEmail terminé sans exception.');
+    enregistrerDiagnosticENR10_(diagnostic);
 
-    return json_({
+    return jsonENR10_({
       ok: true,
-      message: 'Demande de courriel traitée.',
+      message: 'Appel d’envoi du courriel terminé.',
       filename: nomFichier,
       pdfBytes: octets.length
     });
 
   } catch (err) {
     diagnostic.statut = 'ERREUR';
-    diagnostic.erreur = err && err.stack
-      ? String(err.stack)
-      : String(err);
-
-    console.error('[ENR08] ERREUR : ' + diagnostic.erreur);
+    diagnostic.erreur = err && err.stack ? String(err.stack) : String(err);
+    console.error('[ENR10] ERREUR : ' + diagnostic.erreur);
 
     try {
-      enregistrerDiagnostic_(diagnostic);
-    } catch (erreurStockage) {
-      console.error('Échec du stockage : ' + String(erreurStockage));
+      enregistrerDiagnosticENR10_(diagnostic);
+    } catch (storageError) {
+      console.error('[ENR10] Échec du stockage du diagnostic : ' + String(storageError));
     }
 
-    return json_({
+    return jsonENR10_({
       ok: false,
-      error: String(err)
+      error: String(err && err.message ? err.message : err)
     });
 
   } finally {
-    console.log('[ENR08] Fin doPost.');
+    console.log('[ENR10] Fin doPost.');
   }
 }
 
-function json_(objet) {
+function jsonENR10_(objet) {
   return ContentService
     .createTextOutput(JSON.stringify(objet))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-function sanitizeFilename_(nom) {
-  return String(nom)
+function texteENR10_(valeur, limite) {
+  return String(valeur || '')
+    .replace(/[\u0000-\u001F\u007F]/g, ' ')
+    .trim()
+    .slice(0, limite);
+}
+
+function sanitizeFilenameENR10_(nom) {
+  return String(nom || 'maintenance-fauteuil-roulant.pdf')
     .replace(/[^a-zA-Z0-9._-]/g, '_')
-    .slice(0, 120) || 'fiche-maintenance.pdf';
+    .slice(0, 120) || 'maintenance-fauteuil-roulant.pdf';
 }
 
-function afficherDernierDiagnosticEuroMed() {
-  const valeur = PropertiesService
-    .getScriptProperties()
-    .getProperty(CLE_DIAGNOSTIC);
-
-  console.log(valeur || 'Aucun diagnostic enregistré.');
+/**
+ * À lancer manuellement dans Apps Script pour afficher le dernier diagnostic.
+ * Ne déclenche aucun envoi de courriel.
+ */
+function afficherDernierDiagnosticENR10() {
+  const valeur = PropertiesService.getScriptProperties()
+    .getProperty(CLE_DIAGNOSTIC_ENR10);
+  console.log(valeur || 'Aucun diagnostic ENR10 enregistré.');
 }
 
-function diagnosticMailEuroMed() {
-  GmailApp.sendEmail(
-    DESTINATAIRE,
-    'Test diagnostic EuroMed',
-    'Test envoyé le ' + new Date().toISOString() +
-    '\nQuota restant : ' + MailApp.getRemainingDailyQuota()
-  );
-
-  console.log('Appel de test Gmail terminé.');
+/**
+ * Test manuel de courriel, sans PDF.
+ * À exécuter seulement si un test de réception est souhaité.
+ */
+function diagnosticMailENR10() {
+  MailApp.sendEmail({
+    to: DESTINATAIRE_ENR10,
+    subject: 'Test diagnostic EuroMed — fauteuil roulant',
+    body: 'Test envoyé le ' + new Date().toISOString() +
+      '\nQuota restant : ' + MailApp.getRemainingDailyQuota(),
+    name: NOM_EXPEDITEUR_ENR10
+  });
+  console.log('Appel de test MailApp terminé.');
 }
-
-function testerStockageEuroMed() {
-  const props = PropertiesService.getScriptProperties();
-
-  props.setProperty(
-    'ENR08_TEST_STOCKAGE',
-    'Test effectué le ' + new Date().toISOString()
-  );
-
-  console.log(
-    'Valeur enregistrée : ' +
-    props.getProperty('ENR08_TEST_STOCKAGE')
-  );
-}
-
