@@ -260,13 +260,13 @@ function renderPDFPage(pdf,d){
   const right=[`Établissement / client : ${d.client}`,`Service / chambre : ${d.localisation}`,`Adresse : ${d.adresse}`,`Ville : ${d.ville}`,`Réf. intervention : ${d.reference}`];
   left.forEach((s,i)=>pdf.text(s,M+3,y+11+i*5));right.forEach((s,i)=>pdf.text(s,110,y+11+i*5));y+=32;
 
-  const hasNonConforme=Object.entries(d.controls||{}).some(([item,result])=>result==='Non conforme' && !/^Propreté générale(?:\\s*\\/|$)/.test(item.trim()));
+  const hasNonConforme=Object.entries(d.controls||{}).some(([item,result])=>result==='Non conforme' && !(item.trim()==='Propreté générale' || item.trim().startsWith('Propreté générale /')));
   if(hasNonConforme){pdf.setFillColor(255,205,205);pdf.roundedRect(M,y,W-2*M,8,1.5,1.5,'F');pdf.setTextColor(190,0,0);pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.text('MATÉRIEL NON CONFORME',W/2,y+5.4,{align:'center'});pdf.setTextColor(0,0,0);pdf.setFontSize(8);y+=11;}
   else{pdf.setFillColor(210,245,220);pdf.roundedRect(M,y,W-2*M,8,1.5,1.5,'F');pdf.setTextColor(20,125,55);pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.text('MATÉRIEL CONFORME',W/2,y+5.4,{align:'center'});pdf.setTextColor(0,0,0);pdf.setFontSize(8);y+=11;}
 
 
   const cleanlinessNonConforme = Object.entries(d.controls||{}).some(([item,result]) =>
-    result === 'Non conforme' && /^Propreté générale(?:\\s*\\/|$)/.test(item.trim())
+    result === 'Non conforme' && (item.trim()==='Propreté générale' || item.trim().startsWith('Propreté générale /'))
   );
   if(cleanlinessNonConforme){
     if(y>270){pdf.addPage();y=12;}
