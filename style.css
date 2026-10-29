@@ -427,3 +427,9 @@ body::before,.app-shell::before{content:none!important;display:none!important;an
 
 /* Bulles désactivées sur tous les écrans */
 body::before,.app-shell::before{content:none!important;display:none!important;animation:none!important;background:none!important;filter:none!important;will-change:auto!important}
+
+/* Mode clair EuroMed : arrière-plan pastel plus vivant, sans animation */
+html[data-theme="light"] body{background:linear-gradient(135deg,#d9f2ff 0%,#fff0f6 34%,#eee8ff 68%,#dcf8eb 100%)!important;background-attachment:fixed!important}
+html[data-theme="light"] body main{background:linear-gradient(145deg,#e6f6ff 0%,#fff1f7 48%,#f0ecff 100%)!important;border-radius:22px}
+html[data-theme="light"] body main>section,html[data-theme="light"] body main>.title,html[data-theme="light"] body main>.batch-panel,html[data-theme="light"] body main>.obsolescence-panel,html[data-theme="light"] body main>.service-status,html[data-theme="light"] body main>.notes,html[data-theme="light"] body main>.sign,html[data-theme="light"] body main>.ident{background:linear-gradient(135deg,#f0faff 0%,#fff4f8 55%,#f4f0ff 100%)!important;border-color:#bdddea!important}
+html[data-theme="light"] body .privacy-notice{background:linear-gradient(135deg,#dff5ff,#f5eaff 55%,#e3f9ee)!important;border-color:#a8d8e8!important}
