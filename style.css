@@ -433,3 +433,13 @@ html[data-theme="light"] body{background:linear-gradient(135deg,#d9f2ff 0%,#fff0
 html[data-theme="light"] body main{background:linear-gradient(145deg,#e6f6ff 0%,#fff1f7 48%,#f0ecff 100%)!important;border-radius:22px}
 html[data-theme="light"] body main>section,html[data-theme="light"] body main>.title,html[data-theme="light"] body main>.batch-panel,html[data-theme="light"] body main>.obsolescence-panel,html[data-theme="light"] body main>.service-status,html[data-theme="light"] body main>.notes,html[data-theme="light"] body main>.sign,html[data-theme="light"] body main>.ident{background:linear-gradient(135deg,#f0faff 0%,#fff4f8 55%,#f4f0ff 100%)!important;border-color:#bdddea!important}
 html[data-theme="light"] body .privacy-notice{background:linear-gradient(135deg,#dff5ff,#f5eaff 55%,#e3f9ee)!important;border-color:#a8d8e8!important}
+
+
+/* Mobile: bouton de thème discret et espace réservé pour ne jamais chevaucher les titres */
+@media (max-width:760px){
+ html body{padding-top:54px!important}
+ .theme-toggle{position:fixed!important;top:calc(6px + env(safe-area-inset-top,0px))!important;right:8px!important;z-index:40!important;width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;padding:0!important;gap:0!important;border-radius:50%!important;font-size:19px!important;box-shadow:0 2px 8px rgba(10,35,65,.22)!important;opacity:.92}
+ #themeToggleLabel{display:none!important}
+ .theme-toggle:active{transform:scale(.96)}
+}
+@media print{.theme-toggle{display:none!important}}
