@@ -274,16 +274,17 @@ function renderPDFPage(pdf,d){
     pdf.setDrawColor(160,115,0);
     pdf.setLineWidth(0.6);
     pdf.rect(M,y,W-2*M,15,'FD');
-    // Pictogramme d'avertissement vectoriel, compatible avec le PDF.
-    pdf.setFillColor(255,255,255);
-    pdf.setDrawColor(0,0,0);
-    pdf.triangle(M+4,y+3,M+12,y+3,M+8,y+12,'FD');
-    pdf.setTextColor(0,0,0);
+    // Symbole d'alerte dessiné en vectoriel : pas d'émoji, rendu fiable dans le PDF.
+    pdf.setFillColor(190,0,0);
+    pdf.setDrawColor(190,0,0);
+    pdf.triangle(M+4,y+3,M+13,y+3,M+8.5,y+12,'FD');
+    pdf.setTextColor(255,255,255);
     pdf.setFont('helvetica','bold');
     pdf.setFontSize(8);
-    pdf.text('!',M+8,y+9.3,{align:'center'});
+    pdf.text('!',M+8.5,y+9.5,{align:'center'});
+    pdf.setTextColor(0,0,0);
     pdf.setFontSize(12);
-    pdf.text('Matériel sale',W/2+7,y+9.5,{align:'center'});
+    pdf.text('MATÉRIEL SALE',W/2+8,y+9.5,{align:'center'});
     pdf.setTextColor(0,0,0);
     pdf.setFontSize(8);
     y+=18;
