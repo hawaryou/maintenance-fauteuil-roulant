@@ -265,29 +265,36 @@ function renderPDFPage(pdf,d){
   else{pdf.setFillColor(210,245,220);pdf.roundedRect(M,y,W-2*M,8,1.5,1.5,'F');pdf.setTextColor(20,125,55);pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.text('MATÉRIEL CONFORME',W/2,y+5.4,{align:'center'});pdf.setTextColor(0,0,0);pdf.setFontSize(8);y+=11;}
 
 
-  const cleanlinessNonConforme = Object.entries(d.controls||{}).some(([item,result]) =>
-    result === 'Non conforme' && (item.trim()==='Propreté générale' || item.trim().startsWith('Propreté générale /'))
-  );
-  if(cleanlinessNonConforme){
-    if(y>270){pdf.addPage();y=12;}
-    pdf.setFillColor(255,225,65);
-    pdf.setDrawColor(160,115,0);
+  // Détecte la propreté même si le libellé contient des précisions ou des accents.
+  const cleanlinessNonConforme = Object.entries(d.controls || {}).some(([item, result]) => {
+    const libelle = String(item).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const valeur = String(result).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    return libelle.includes('proprete generale') && valeur === 'non conforme';
+  });
+  if (cleanlinessNonConforme) {
+    if (y > 270) { pdf.addPage(); y = 12; }
+    pdf.setFillColor(255, 225, 65);
+    pdf.setDrawColor(160, 115, 0);
     pdf.setLineWidth(0.6);
-    pdf.rect(M,y,W-2*M,15,'FD');
-    // Symbole d'alerte dessiné en vectoriel : pas d'émoji, rendu fiable dans le PDF.
-    pdf.setFillColor(190,0,0);
-    pdf.setDrawColor(190,0,0);
-    pdf.triangle(M+4,y+3,M+13,y+3,M+8.5,y+12,'FD');
-    pdf.setTextColor(255,255,255);
-    pdf.setFont('helvetica','bold');
+    pdf.rect(M, y, W - 2 * M, 15, 'FD');
+
+    // Pictogramme vectoriel : triangle rouge et point d'exclamation blanc, sans emoji.
+    pdf.setFillColor(190, 0, 0);
+    pdf.setDrawColor(190, 0, 0);
+    pdf.triangle(M + 4, y + 3, M + 13, y + 3, M + 8.5, y + 12, 'FD');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(8);
-    pdf.text('!',M+8.5,y+9.5,{align:'center'});
-    pdf.setTextColor(0,0,0);
+    pdf.text('!', M + 8.5, y + 9.5, { align: 'center' });
+
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(12);
-    pdf.text('MATÉRIEL SALE',W/2+8,y+9.5,{align:'center'});
-    pdf.setTextColor(0,0,0);
+    pdf.text('MATÉRIEL SALE', W / 2 + 8, y + 9.5, { align: 'center' });
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(8);
-    y+=18;
+    y += 18;
   }
 
 
