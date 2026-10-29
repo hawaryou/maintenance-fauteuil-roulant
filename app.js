@@ -260,9 +260,35 @@ function renderPDFPage(pdf,d){
   const right=[`Établissement / client : ${d.client}`,`Service / chambre : ${d.localisation}`,`Adresse : ${d.adresse}`,`Ville : ${d.ville}`,`Réf. intervention : ${d.reference}`];
   left.forEach((s,i)=>pdf.text(s,M+3,y+11+i*5));right.forEach((s,i)=>pdf.text(s,110,y+11+i*5));y+=32;
 
-  const hasNonConforme=Object.entries(d.controls||{}).some(([item,result])=>result==='Non conforme' && item.trim()!=='Propreté générale');
+  const hasNonConforme=Object.entries(d.controls||{}).some(([item,result])=>result==='Non conforme' && !/^Propreté générale(?:\\s*\\/|$)/.test(item.trim()));
   if(hasNonConforme){pdf.setFillColor(255,205,205);pdf.roundedRect(M,y,W-2*M,8,1.5,1.5,'F');pdf.setTextColor(190,0,0);pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.text('MATÉRIEL NON CONFORME',W/2,y+5.4,{align:'center'});pdf.setTextColor(0,0,0);pdf.setFontSize(8);y+=11;}
   else{pdf.setFillColor(210,245,220);pdf.roundedRect(M,y,W-2*M,8,1.5,1.5,'F');pdf.setTextColor(20,125,55);pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.text('MATÉRIEL CONFORME',W/2,y+5.4,{align:'center'});pdf.setTextColor(0,0,0);pdf.setFontSize(8);y+=11;}
+
+
+  const cleanlinessNonConforme = Object.entries(d.controls||{}).some(([item,result]) =>
+    result === 'Non conforme' && /^Propreté générale(?:\\s*\\/|$)/.test(item.trim())
+  );
+  if(cleanlinessNonConforme){
+    if(y>270){pdf.addPage();y=12;}
+    pdf.setFillColor(255,225,65);
+    pdf.setDrawColor(160,115,0);
+    pdf.setLineWidth(0.6);
+    pdf.rect(M,y,W-2*M,15,'FD');
+    // Pictogramme d'avertissement vectoriel, compatible avec le PDF.
+    pdf.setFillColor(255,255,255);
+    pdf.setDrawColor(0,0,0);
+    pdf.triangle(M+4,y+3,M+12,y+3,M+8,y+12,'FD');
+    pdf.setTextColor(0,0,0);
+    pdf.setFont('helvetica','bold');
+    pdf.setFontSize(8);
+    pdf.text('!',M+8,y+9.3,{align:'center'});
+    pdf.setFontSize(12);
+    pdf.text('Matériel sale',W/2+7,y+9.5,{align:'center'});
+    pdf.setTextColor(0,0,0);
+    pdf.setFontSize(8);
+    y+=18;
+  }
+
 
   for(const [title,items] of sections){
     if(y>265){pdf.addPage();y=12}
