@@ -281,7 +281,7 @@ function renderPDFPage(pdf,d){
     // Pictogramme vectoriel : triangle rouge et point d'exclamation blanc, sans emoji.
     pdf.setFillColor(190, 0, 0);
     pdf.setDrawColor(190, 0, 0);
-    pdf.triangle(M + 4, y + 3, M + 13, y + 3, M + 8.5, y + 12, 'FD');
+    pdf.triangle(M + 8.5, y + 3, M + 13, y + 12, M + 4, y + 12, 'FD');
     pdf.setTextColor(255, 255, 255);
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(8);
@@ -294,6 +294,9 @@ function renderPDFPage(pdf,d){
     pdf.setTextColor(0, 0, 0);
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(8);
+    // Rétablit le contour noir standard pour les cases suivantes.
+    pdf.setDrawColor(0, 0, 0);
+    pdf.setLineWidth(0.2);
     y += 18;
   }
 
