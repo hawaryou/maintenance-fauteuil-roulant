@@ -278,14 +278,15 @@ function renderPDFPage(pdf,d){
     pdf.setLineWidth(0.6);
     pdf.rect(M, y, W - 2 * M, 15, 'FD');
 
-    // Pictogramme vectoriel : triangle rouge et point d'exclamation blanc, sans emoji.
-    pdf.setFillColor(190, 0, 0);
-    pdf.setDrawColor(190, 0, 0);
-    pdf.triangle(M + 8.5, y + 3, M + 13, y + 12, M + 4, y + 12, 'FD');
+    // Pictogramme plus lisible : triangle rouge clair et point d'exclamation noir.
+    pdf.setFillColor(225, 45, 45);
+    pdf.setDrawColor(150, 20, 20);
+    pdf.setLineWidth(0.35);
+    pdf.triangle(M + 8.5, y + 2, M + 14, y + 13, M + 3, y + 13, 'FD');
     pdf.setTextColor(255, 255, 255);
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(8);
-    pdf.text('!', M + 8.5, y + 9.5, { align: 'center' });
+    pdf.setFontSize(10);
+    pdf.text('!', M + 8.5, y + 10.5, { align: 'center' });
 
     pdf.setTextColor(0, 0, 0);
     pdf.setFont('helvetica', 'bold');
