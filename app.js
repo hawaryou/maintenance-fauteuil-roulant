@@ -283,7 +283,7 @@ function renderPDFPage(pdf,d){
     pdf.setDrawColor(150, 20, 20);
     pdf.setLineWidth(0.35);
     pdf.triangle(M + 8.5, y + 2, M + 14, y + 13, M + 3, y + 13, 'FD');
-    pdf.setTextColor(255, 255, 255);
+    pdf.setTextColor(20, 20, 20);
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(10);
     pdf.text('!', M + 8.5, y + 10.5, { align: 'center' });
