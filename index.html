@@ -143,7 +143,8 @@
   </section>
 
 
-  <section class="sign">
+  <section class="euromed-extra"><h2>📷 Photos de l’intervention</h2><p>Jusqu’à 6 photos par appareil, compressées et intégrées au PDF.</p><label class="photo-picker">📸 Prendre une photo / choisir dans la galerie <input id="maintenancePhotos" type="file" accept="image/*" capture="environment" multiple></label><div id="maintenancePhotoList" class="maintenance-photo-list"></div><h2>✍️ Identification du signataire client</h2><label>Type de signataire <select id="signerType"><option value="private">Particulier</option><option value="institution">Établissement / foyer / institution médicale</option></select></label><div class="signer-fields"><label>Prénom du signataire <input id="signerFirstName" required></label><label>Nom du signataire <input id="signerLastName" required></label><label id="signerRoleWrap" hidden>Fonction / qualité <input id="signerRole" placeholder="Directeur, infirmier, aide-soignant…"></label></div><p>En tournée multi-équipements, les photos restent liées à chaque appareil. L’identité et la signature du représentant sont communes à la tournée.</p></section>
+<section class="sign">
     <label>Fait le : <input type="date" id="date"></label>
     <label>Nom Prénom du technicien : <input id="technicien"></label>
     <div class="signatures">
@@ -180,7 +181,8 @@
     <div class="pdf-preview-header"><div><h2 id="pdfPreviewTitle">Aperçu du PDF ENR10</h2><p>Vérifiez le document avec le client avant l’envoi.</p></div><button type="button" id="closePdfPreview" class="preview-close" aria-label="Fermer l’aperçu">✕</button></div>
     <iframe id="pdfPreviewFrame" title="Aperçu du PDF de maintenance" src="about:blank"></iframe>
     <div class="pdf-preview-actions"><button type="button" id="openPdfPreviewTab">↗ Ouvrir le PDF en plein écran</button><button type="button" id="downloadPreviewPdf" class="preview-button">⬇ Télécharger</button><button type="button" id="closePdfPreviewBottom" class="secondary-button">Retour à la fiche</button><button type="button" id="sendPreviewPdf" class="primary">✓ Valider et envoyer le PDF</button></div>
-    <p class="preview-note">Le bouton d’envoi transmet le PDF à l’adresse EuroMed configurée. Vérifiez les informations et les signatures avant de confirmer.</p>
+    <div class="euromed-recipients"><strong>Destinataires du PDF</strong><label><input type="checkbox" id="sendToEuroMed" checked> EuroMed (adresse habituelle)</label><label><input type="checkbox" id="sendToClient"> Client / établissement</label><label class="client-email-wrap">Adresse e-mail du client<input type="email" id="clientEmail" placeholder="nom@etablissement.fr"></label></div>
+<p class="preview-note">Le bouton d’envoi transmet le PDF à l’adresse EuroMed configurée. Vérifiez les informations et les signatures avant de confirmer.</p>
   </div>
 </div>
 
