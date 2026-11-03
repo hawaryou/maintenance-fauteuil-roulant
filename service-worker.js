@@ -1,9 +1,9 @@
-/* EuroMed — application offline, version 20261103-signataire-page-v2 */
+/* EuroMed — application offline, version 20261103-enr10-v06-endpoint */
 /* Cache propre à ce projet pour ne pas perturber les autres applications EuroMed. */
-const CACHE_NAME='euromed-maintenance-fauteuil-roulant-offline-20261103-signataire-page-v2';
+const CACHE_NAME='euromed-maintenance-fauteuil-roulant-offline-20261103-enr10-v06-endpoint';
 const CACHE_PREFIX='euromed-maintenance-fauteuil-roulant-offline-';
 const SCOPE=self.registration.scope;
-const LOCAL_FILES=["./","./index.html","style.css?v=20261103-photo-signature-v1","config.js","offline-queue.js?v=20261024-offline-lit-medical-sync","app.js?v=20261103-signataire-page-v2","./euromed-logo.jpeg","./scan-success-euromed.jpg"];
+const LOCAL_FILES=["./","./index.html","style.css?v=20261103-photo-signature-v1","config.js?v=20261103-enr10-v06-endpoint","offline-queue.js?v=20261024-offline-lit-medical-sync","app.js?v=20261103-enr10-v06-endpoint","./euromed-logo.jpeg","./scan-success-euromed.jpg"];
 const REMOTE_FILES=["https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js","https://cdn.jsdelivr.net/npm/zxing-wasm@3.1.4/dist/iife/reader/index.js","https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js","https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js","https://cdn.jsdelivr.net/npm/@undecaf/barcode-detector-polyfill@0.9.23/dist/main.js"];
 function localUrl(path){return new URL(path,SCOPE).href}
 async function precacheOne(cache,url){
