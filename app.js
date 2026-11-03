@@ -472,7 +472,21 @@ photoInput?.addEventListener('change',async()=>{for(const f of Array.from(photoI
 function validateSigner(){const f=document.getElementById('signerFirstName')?.value.trim(),l=document.getElementById('signerLastName')?.value.trim(),inst=signerType?.value==='institution',role=document.getElementById('signerRole')?.value.trim();document.getElementById('signerRoleWrap').hidden=!inst;document.getElementById('signerRole').required=inst;if(!f||!l)throw new Error('Renseignez le prénom et le nom du signataire client.');if(inst&&!role)throw new Error('Renseignez la fonction du représentant de l’établissement.')}
 signerType?.addEventListener('change',()=>{const v=signerType.value==='institution';document.getElementById('signerRoleWrap').hidden=!v;document.getElementById('signerRole').required=v});
 const baseCollectEuro=collect;collect=function(){const d=baseCollectEuro();d.photos=euromedPhotos.slice();d.signerFirstName=document.getElementById('signerFirstName')?.value.trim()||'';d.signerLastName=document.getElementById('signerLastName')?.value.trim()||'';d.signerRole=document.getElementById('signerRole')?.value.trim()||'';d.signerType=signerType?.value||'private';return d};
-const baseRenderEuro=renderPDFPage;renderPDFPage=function(pdf,d){baseRenderEuro(pdf,d);const f=document.getElementById('signerFirstName')?.value.trim()||d.signerFirstName||'',l=document.getElementById('signerLastName')?.value.trim()||d.signerLastName||'',role=document.getElementById('signerRole')?.value.trim()||d.signerRole||'',photos=d.photos||[];if(!f&&!l&&!photos.length)return;pdf.addPage();pdf.setFont('helvetica','bold');pdf.setFontSize(14);pdf.text('IDENTITÉ DU SIGNATAIRE',105,18,{align:'center'});pdf.setFont('helvetica','normal');pdf.setFontSize(11);pdf.text('Nom : '+(f+' '+l).trim(),15,32);if(role)pdf.text('Fonction : '+role,15,40);photos.forEach((p,i)=>{if(i)pdf.addPage();pdf.setFontSize(9);pdf.text('Photo '+(i+1)+' — '+(p.name||'Intervention'),15,55);try{pdf.addImage(p.data,'JPEG',15,62,180,112,undefined,'FAST')}catch(e){console.warn(e)}})};
+const baseRenderEuro=renderPDFPage;renderPDFPage=function(pdf,d){
+  baseRenderEuro(pdf,d);
+  const photos=Array.isArray(d.photos)?d.photos:[];
+  // L'identification du client figure déjà au-dessus de sa signature sur la fiche principale.
+  // Aucune page supplémentaire lorsque seules ses coordonnées ont été renseignées.
+  photos.forEach((photo,index)=>{
+    pdf.addPage();
+    pdf.setFont('helvetica','bold');pdf.setFontSize(13);
+    pdf.text('PHOTOGRAPHIES DE L’INTERVENTION',105,18,{align:'center'});
+    pdf.setFont('helvetica','normal');pdf.setFontSize(9);
+    pdf.text('Photo '+(index+1)+' — '+(photo.name||'Intervention'),15,32,{maxWidth:180});
+    try{pdf.addImage(photo.data,'JPEG',15,38,180,112,undefined,'FAST');}
+    catch(error){console.warn('Photo non intégrée au PDF',error);pdf.text('Photo indisponible dans le PDF.',15,45);}
+  });
+};
 function clearEuroPhotos(){euromedPhotos=[];photoUI()}
 for(const n of ['resetBedFieldsForNext','resetFieldsForNext'])if(typeof window[n]==='function'){const old=window[n];window[n]=function(){old.apply(this,arguments);clearEuroPhotos()}}
 const baseGenerateEuro=generateCurrentOrBatchPDF;generateCurrentOrBatchPDF=async function(){validateSigner();return baseGenerateEuro.apply(this,arguments)};
