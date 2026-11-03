@@ -321,11 +321,12 @@ function renderPDFPage(pdf,d){
   // de signature en conservant son ratio. On recadre également les pixels
   // transparents autour du tracé pour éviter l'effet "signature coupée".
 pdf.text(`Fait le : ${d.date||'—'}    Technicien : ${d.technicien||'—'}`,M,y+5);
-  pdf.setFont('helvetica','bold');
-  pdf.text('Signature du technicien',M,y+13);
-  pdf.text('Signature du client',110,y+13);
-  pdf.rect(M,y+15,90,30);
-  pdf.rect(110,y+15,90,30);
+  const signerFirst=String(d.signerFirstName||document.getElementById('signerFirstName')?.value||'').trim();
+  const signerLast=String(d.signerLastName||document.getElementById('signerLastName')?.value||'').trim();
+  const signerRole=String(d.signerRole||document.getElementById('signerRole')?.value||'').trim();
+  pdf.setFont('helvetica','bold');pdf.setFontSize(7);pdf.text('IDENTIFICATION DU SIGNATAIRE CLIENT',110,y+11);
+  pdf.setFont('helvetica','normal');pdf.setFontSize(7);pdf.text('Nom : '+([signerFirst,signerLast].filter(Boolean).join(' ')||'—'),110,y+15,{maxWidth:86});if(signerRole)pdf.text('Fonction : '+signerRole,110,y+19,{maxWidth:86});
+  pdf.setFont('helvetica','bold');pdf.setFontSize(8);pdf.text('Signature du technicien',M,y+26);pdf.text('Signature du client',110,y+26);pdf.rect(M,y+28,90,22);pdf.rect(110,y+28,90,22);
 
   function addSignature(dataUrl,x,y,w,h){
     if(!dataUrl)return;
@@ -365,8 +366,8 @@ pdf.text(`Fait le : ${d.date||'—'}    Technicien : ${d.technicien||'—'}`,M,y
       console.warn('Signature PDF non insérée',err);
     }
   }
-  addSignature(d.sigTech,M+2,y+17,86,26);
-  addSignature(d.sigClient,112,y+17,86,26);
+  addSignature(d.sigTech,M+2,y+29,86,18);
+  addSignature(d.sigClient,112,y+29,86,18);
 }
 
 function makePDFForData(d,pdf){
