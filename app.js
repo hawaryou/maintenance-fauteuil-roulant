@@ -442,6 +442,7 @@ document.getElementById('sendPreviewPdf').onclick=async()=>{
       closePdfPreview();return;
     }
     status.textContent='Transmission du PDF validé…';
+    const sendEuro=document.getElementById('sendToEuroMed')?.checked!==false,sendClient=document.getElementById('sendToClient')?.checked===true,clientMail=document.getElementById('clientEmail')?.value.trim()||'';if(!sendEuro&&!sendClient)throw new Error('Sélectionnez au moins un destinataire.');if(sendClient&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(clientMail))throw new Error('Saisissez une adresse e-mail client valide.');
     const b64=result.pdf.output('datauristring').split(',')[1];
     const params=new URLSearchParams({token:APP_TOKEN,pdf_base64:b64,filename,client:data.client,technicien:data.technicien,date:data.date,reference:data.reference,sendToEuroMed:document.getElementById('sendToEuroMed')?.checked===false?'false':'true',sendToClient:document.getElementById('sendToClient')?.checked?'true':'false',clientEmail:document.getElementById('clientEmail')?.value.trim()||'',serie:batchFinalized?`${result.records.length} fauteuils`:data.serie});
     const response=await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:params.toString()});
