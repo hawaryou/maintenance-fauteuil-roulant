@@ -31,6 +31,7 @@
 @media(max-width:600px){.scan-row{flex-direction:column}.scan-actions{display:grid;grid-template-columns:1fr 1fr}.scan-actions .scan-button{width:100%;min-height:44px}.scanner-tools .zoom-button{min-height:42px}.stop-button{width:100%;min-height:44px}}
 </style>
 <script id="strip-chatgpt-tracking">try{const u=new URL(location.href);if(/chatgpt/i.test(u.searchParams.get('utm_source')||'')){u.searchParams.delete('utm_source');history.replaceState(null,'',u.pathname+(u.search?'?'+u.searchParams.toString():'')+u.hash)}}catch(e){}</script>
+  <link rel="stylesheet" href="https://hawaryou.github.io/HUB-euromed/euromed-auth.css">
 </head>
 <body>
 <button class="theme-toggle" id="themeToggle" type="button" aria-label="Passer en mode clair" aria-pressed="false"><span aria-hidden="true">☀️</span><span id="themeToggleLabel">Mode clair</span></button>
@@ -215,5 +216,6 @@
 <script src="offline-queue.js?v=20261024-offline-lit-medical-sync"></script>
 <script src="app.js?v=20261103-enr10-v06-endpoint"></script>
 <script>if("serviceWorker" in navigator&&location.protocol==="https:"){window.addEventListener("load",function(){navigator.serviceWorker.register("./service-worker.js").catch(function(e){console.warn("Cache hors connexion indisponible",e);});});}</script>
+  <script src="https://hawaryou.github.io/HUB-euromed/euromed-auth.js"></script>
 </body>
 </html>
